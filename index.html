@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Suki SOP</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+    }
+    .app {
+      max-width: 520px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 18px 16px 86px;
+    }
+    h1 { margin: 6px 0 4px; font-size: 30px; }
+    h2 { font-size: 20px; margin: 0 0 12px; }
+    h3 { font-size: 16px; margin: 0 0 8px; }
+    p { margin: 0; color: #6e6e73; line-height: 1.5; }
+    .section { margin-top: 20px; }
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.05);
+      margin-bottom: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    button, input, textarea, select {
+      font: inherit;
+    }
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: #f2f2f7;
+      color: #1d1d1f;
+      cursor: pointer;
+    }
+    .primary {
+      background: #007aff;
+      color: #fff;
+      font-weight: 700;
+    }
+    .soft {
+      background: #e9f2ff;
+      color: #007aff;
+    }
+    .danger {
+      background: #ffecec;
+      color: #d70015;
+    }
+    input, textarea, select {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: #f2f2f7;
+      border-radius: 14px;
+      padding: 12px;
+      margin-top: 8px;
+    }
+    textarea { min-height: 92px; resize: vertical; }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #6e6e73;
+    }
+    .tabs {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid #ddd;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      max-width: 520px;
+      margin: 0 auto;
+      z-index: 5;
+    }
+    .tab {
+      padding: 10px 4px 12px;
+      font-size: 13px;
+      color: #8e8e93;
+      background: transparent;
+      border-radius: 0;
+    }
+    .tab.active {
+      color: #007aff;
+      font-weight: 700;
+    }
+    .view { display: none; }
+    .view.active { display: block; }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+    .muted { color: #86868b; font-size: 13px; }
+    .pill {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #f2f2f7;
+      color: #515154;
+      font-size: 12px;
+      margin: 6px 6px 0 0;
+    }
+    .image {
+      width: 100%;
+      border-radius: 14px;
+      margin-top: 10px;
+      max-height: 260px;
+      object-fit: cover;
+      background: #eee;
+    }
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.28);
+      display: none;
+      align-items: flex-end;
+      z-index: 10;
+    }
+    .modal.show { display: flex; }
+    .sheet {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 24px 24px 0 0;
+      padding: 18px 16px 24px;
+      max-height: 88vh;
+      overflow: auto;
+    }
+    .empty {
+      text-align: center;
+      color: #86868b;
+      padding: 26px 0;
+    }
+    .check {
+      width: 22px;
+      height: 22px;
+      accent-color: #007aff;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section id="home" class="view active">
+      <h1>Suki SOP</h1>
+      <p>先记录，再整理。这里是你的个人办公记忆库。</p>
+
+      <div class="section">
+        <h2>快速记录</h2>
+        <div class="grid">
+          <button class="primary" onclick="openTrace()">拍照留痕</button>
+          <button class="soft" onclick="openTextTrace()">文字记录</button>
+          <button onclick="showTab('meeting')">会议记录</button>
+          <button onclick="openKnowledge()">新增知识</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="row">
+          <h2>今日待办</h2>
+          <button class="soft" onclick="addTodo()">新增</button>
+        </div>
+        <div id="todoList"></div>
+      </div>
+
+      <div class="section">
+        <h2>灵感滚动</h2>
+        <div class="card">
+          <p id="ideaText"></p>
+          <div class="row" style="margin-top:12px">
+            <button onclick="nextIdea()">换一条</button>
+            <button class="soft" onclick="addIdea()">加入灵感</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>快捷入口</h2>
+        <div class="grid">
+          <button onclick="openPerson()">找人地图</button>
+          <button onclick="showTab('trace')">最近留痕</button>
+          <button onclick="showTab('knowledge')">知识库</button>
+          <button onclick="showTab('meeting')">最近会议</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="trace" class="view">
+      <div class="row">
+        <h1>工作留痕</h1>
+        <button class="primary" onclick="openTrace()">新增</button>
+      </div>
+      <p>按时间记录你做过什么，之后可以按项目复盘。</p>
+      <div class="section" id="traceList"></div>
+    </section>
+
+    <section id="knowledge" class="view">
+      <div class="row">
+        <h1>知识库</h1>
+        <button class="primary" onclick="openKnowledge()">新增</button>
+      </div>
+      <p>系统入口、操作步骤、文件资料、注意事项都放这里。</p>
+      <input id="knowledgeSearch" placeholder="搜索标题、类型、内容" oninput="renderKnowledge()" />
+      <div class="section" id="knowledgeList"></div>
+    </section>
+
+    <section id="meeting" class="view">
+      <h1>会议</h1>
+      <p>先把杂乱内容放进来，再生成整理版纪要。</p>
+      <div class="card section">
+        <label>会议主题</label>
+        <input id="meetingTitle" placeholder="例如：集团集训沟通会" />
+        <label>原始内容</label>
+        <textarea id="meetingRaw" placeholder="把会议里听到的内容、电话沟通要点、临时想法都写在这里"></textarea>
+        <button class="primary" style="width:100%;margin-top:12px" onclick="summarizeMeeting()">AI 整理会议</button>
+      </div>
+      <div id="meetingResult"></div>
+      <div class="section" id="meetingList"></div>
+    </section>
+  </main>
+
+  <nav class="tabs">
+    <button class="tab active" onclick="showTab('home')">首页</button>
+    <button class="tab" onclick="showTab('trace')">留痕</button>
+    <button class="tab" onclick="showTab('knowledge')">知识库</button>
+    <button class="tab" onclick="showTab('meeting')">会议</button>
+  </nav>
+
+  <div id="traceModal" class="modal">
+    <div class="sheet">
+      <div class="row">
+        <h2>新增留痕</h2>
+        <button onclick="closeModal('traceModal')">关闭</button>
+      </div>
+      <label>上传图片</label>
+      <input id="traceImage" type="file" accept="image/*" onchange="previewImage(event)" />
+      <img id="tracePreview" class="image" style="display:none" />
+      <label>做什么</label>
+      <input id="traceWhat" placeholder="例如：核对物料尺寸" />
+      <label>项目名称</label>
+      <input id="traceProject" placeholder="例如：Q2 / 奥运星计划筛选 / 临时" />
+      <label>日期地点</label>
+      <input id="tracePlace" placeholder="例如：6月29日 办公室" />
+      <label>相关人</label>
+      <input id="tracePeople" placeholder="例如：张三、李四" />
+      <label>备注</label>
+      <textarea id="traceNote" placeholder="补充背景、进展、下一步"></textarea>
+      <button class="primary" style="width:100%;margin-top:14px" onclick="saveTrace()">保存留痕</button>
+    </div>
+  </div>
+
+  <div id="knowledgeModal" class="modal">
+    <div class="sheet">
+      <div class="row">
+        <h2>新增知识</h2>
+        <button onclick="closeModal('knowledgeModal')">关闭</button>
+      </div>
+      <label>标题</label>
+      <input id="kTitle" placeholder="例如：XX系统新建活动页步骤" />
+      <label>类型</label>
+      <select id="kType">
+        <option>操作步骤</option>
+        <option>系统入口</option>
+        <option>文件资料</option>
+        <option>权限说明</option>
+        <option>注意事项</option>
+        <option>业务知识</option>
+        <option>设计方法</option>
+        <option>沟通话术</option>
+        <option>常见问题</option>
+      </select>
+      <label>适用场景</label>
+      <input id="kScene" placeholder="什么时候会用到它" />
+      <label>内容 / 步骤</label>
+      <textarea id="kContent" placeholder="写具体步骤、说明或要点"></textarea>
+      <label>相关链接</label>
+      <input id="kLink" placeholder="https://..." />
+      <label>注意事项</label>
+      <textarea id="kNote" placeholder="容易忘、容易错的地方"></textarea>
+      <button class="primary" style="width:100%;margin-top:14px" onclick="saveKnowledge()">保存知识</button>
+    </div>
+  </div>
+
+  <div id="personModal" class="modal">
+    <div class="sheet">
+      <div class="row">
+        <h2>找人地图</h2>
+        <button onclick="closeModal('personModal')">关闭</button>
+      </div>
+      <label>姓名</label>
+      <input id="pName" />
+      <label>部门 / 岗位</label>
+      <input id="pRole" />
+      <label>负责事项</label>
+      <textarea id="pDuty"></textarea>
+      <label>相关项目</label>
+      <input id="pProject" />
+      <button class="primary" style="width:100%;margin-top:14px" onclick="savePerson()">保存联系人</button>
+      <div id="peopleList" style="margin-top:16px"></div>
+    </div>
+  </div>
+
+  <script>
+    const store = {
+      get(key, fallback) {
+        return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+      },
+      set(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+    };
+
+    let traceImageData = "";
+    let ideaIndex = 0;
+
+    function seed() {
+      if (!localStorage.getItem("ideas")) {
+        store.set("ideas", [
+          { text: "把每次临时沟通后的结论写成一句可执行动作。", tag: "工作方法" },
+          { text: "资料入口记录用途，比只保存链接更容易找回。", tag: "知识管理" },
+          { text: "拍照留痕时写清楚“我当时在做什么”，未来复盘会轻松很多。", tag: "留痕" }
+        ]);
+      }
+      ["todos", "traces", "knowledge", "meetings", "people"].forEach(k => {
+        if (!localStorage.getItem(k)) store.set(k, []);
+      });
+    }
+
+    function showTab(id) {
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      const map = { home: 0, trace: 1, knowledge: 2, meeting: 3 };
+      document.querySelectorAll(".tab")[map[id]].classList.add("active");
+      renderAll();
+    }
+
+    function openTrace() {
+      traceImageData = "";
+      document.getElementById("tracePreview").style.display = "none";
+      ["traceWhat","traceProject","tracePlace","tracePeople","traceNote"].forEach(id => document.getElementById(id).value = "");
+      document.getElementById("tracePlace").value = new Date().toLocaleString("zh-CN");
+      document.getElementById("traceModal").classList.add("show");
+    }
+
+    function openTextTrace() {
+      openTrace();
+      document.getElementById("traceWhat").focus();
+    }
+
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        traceImageData = e.target.result;
+        const img = document.getElementById("tracePreview");
+        img.src = traceImageData;
+        img.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveTrace() {
+      const traces = store.get("traces", []);
+      const item = {
+        id: Date.now(),
+        image: traceImageData,
+        what: val("traceWhat"),
+        project: val("traceProject") || "临时/杂项",
+        place: val("tracePlace"),
+        people: val("tracePeople"),
+        note: val("traceNote"),
+        createdAt: new Date().toLocaleString("zh-CN")
+      };
+      if (!item.what) return alert("先写一下你在做什么。");
+      traces.unshift(item);
+      store.set("traces", traces);
+      closeModal("traceModal");
+      showTab("trace");
+    }
+
+    function renderTraces() {
+      const box = document.getElementById("traceList");
+      const traces = store.get("traces", []);
+      if (!traces.length) {
+        box.innerHTML = '<div class="empty">还没有留痕，先拍一张或写一条。</div>';
+        return;
+      }
+      box.innerHTML = traces.map(x => `
+        <div class="card">
+          <div class="row">
+            <h3>${escapeHtml(x.what)}</h3>
+            <span class="muted">${escapeHtml(x.createdAt)}</span>
+          </div>
+          ${x.image ? `<img class="image" src="${x.image}" />` : ""}
+          <span class="pill">${escapeHtml(x.project)}</span>
+          ${x.place ? `<span class="pill">${escapeHtml(x.place)}</span>` : ""}
+          ${x.people ? `<p style="margin-top:10px">相关人：${escapeHtml(x.people)}</p>` : ""}
+          ${x.note ? `<p style="margin-top:8px">${escapeHtml(x.note)}</p>` : ""}
+          <button class="danger" style="margin-top:12px" onclick="deleteItem('traces', ${x.id})">删除</button>
+        </div>
+      `).join("");
+    }
+
+    function addTodo() {
+      const text = prompt("今天要做什么？");
+      if (!text) return;
+      const todos = store.get("todos", []);
+      todos.unshift({ id: Date.now(), text, done: false });
+      store.set("todos", todos);
+      renderTodos();
+    }
+
+    function renderTodos() {
+      const box = document.getElementById("todoList");
+      const todos = store.get("todos", []);
+      if (!todos.length) {
+        box.innerHTML = '<div class="card empty">今天还没有待办。</div>';
+        return;
+      }
+      box.innerHTML = todos.map(t => `
+        <div class="card row">
+          <div>
+            <h3 style="${t.done ? 'text-decoration:line-through;color:#86868b' : ''}">${escapeHtml(t.text)}</h3>
+            <p>${t.done ? "已完成" : "今天要做"}</p>
+          </div>
+          <input class="check" type="checkbox" ${t.done ? "checked" : ""} onchange="toggleTodo(${t.id})" />
+        </div>
+      `).join("");
+    }
+
+    function toggleTodo(id) {
+      const todos = store.get("todos", []);
+      const item = todos.find(t => t.id === id);
+      item.done = !item.done;
+      store.set("todos", todos);
+      renderTodos();
+    }
+
+    function nextIdea() {
+      const ideas = store.get("ideas", []);
+      ideaIndex = (ideaIndex + 1) % ideas.length;
+      renderIdea();
+    }
+
+    function addIdea() {
+      const text = prompt("写一条灵感 / 方法 / 科普：");
+      if (!text) return;
+      const tag = prompt("给它一个标签：") || "灵感";
+      const ideas = store.get("ideas", []);
+      ideas.unshift({ text, tag });
+      store.set("ideas", ideas);
+      ideaIndex = 0;
+      renderIdea();
+    }
+
+    function renderIdea() {
+      const ideas = store.get("ideas", []);
+      const item = ideas[ideaIndex] || ideas[0];
+      document.getElementById("ideaText").innerHTML = `<strong>${escapeHtml(item.tag)}</strong><br>${escapeHtml(item.text)}`;
+    }
+
+    function openKnowledge() {
+      ["kTitle","kScene","kContent","kLink","kNote"].forEach(id => document.getElementById(id).value = "");
+      document.getElementById("knowledgeModal").classList.add("show");
+    }
+
+    function saveKnowledge() {
+      const knowledge = store.get("knowledge", []);
+      const item = {
+        id: Date.now(),
+        title: val("kTitle"),
+        type: val("kType"),
+        scene: val("kScene"),
+        content: val("kContent"),
+        link: val("kLink"),
+        note: val("kNote"),
+        updatedAt: new Date().toLocaleDateString("zh-CN")
+      };
+      if (!item.title) return alert("先写一个标题。");
+      knowledge.unshift(item);
+      store.set("knowledge", knowledge);
+      closeModal("knowledgeModal");
+      showTab("knowledge");
+    }
+
+    function renderKnowledge() {
+      const q = val("knowledgeSearch").toLowerCase();
+      const box = document.getElementById("knowledgeList");
+      const list = store.get("knowledge", []).filter(x =>
+        [x.title, x.type, x.scene, x.content, x.note].join(" ").toLowerCase().includes(q)
+      );
+      if (!list.length) {
+        box.innerHTML = '<div class="empty">还没有匹配的知识。</div>';
+        return;
+      }
+      box.innerHTML = list.map(x => `
+        <div class="card">
+          <div class="row">
+            <h3>${escapeHtml(x.title)}</h3>
+            <span class="muted">${escapeHtml(x.updatedAt)}</span>
+          </div>
+          <span class="pill">${escapeHtml(x.type)}</span>
+          ${x.scene ? `<p style="margin-top:10px">场景：${escapeHtml(x.scene)}</p>` : ""}
+          ${x.content ? `<p style="margin-top:8px;white-space:pre-wrap">${escapeHtml(x.content)}</p>` : ""}
+          ${x.link ? `<p style="margin-top:8px">链接：<a href="${escapeHtml(x.link)}" target="_blank">${escapeHtml(x.link)}</a></p>` : ""}
+          ${x.note ? `<p style="margin-top:8px">注意：${escapeHtml(x.note)}</p>` : ""}
+          <button class="danger" style="margin-top:12px" onclick="deleteItem('knowledge', ${x.id})">删除</button>
+        </div>
+      `).join("");
+    }
+
+    function summarizeMeeting() {
+      const title = val("meetingTitle") || "未命名会议";
+      const raw = val("meetingRaw");
+      if (!raw) return alert("先写一点会议原始内容。");
+      const summary = {
+        id: Date.now(),
+        title,
+        raw,
+        conclusion: pickSentences(raw, 2),
+        actions: pickActions(raw),
+        createdAt: new Date().toLocaleString("zh-CN")
+      };
+      const meetings = store.get("meetings", []);
+      meetings.unshift(summary);
+      store.set("meetings", meetings);
+      document.getElementById("meetingTitle").value = "";
+      document.getElementById("meetingRaw").value = "";
+      renderMeetings();
+      document.getElementById("meetingResult").innerHTML = `
+        <div class="card">
+          <h2>整理完成</h2>
+          <p>已生成会议结论和行动项，并保存到最近会议。</p>
+        </div>
+      `;
+    }
+
+    function pickSentences(text, count) {
+      return text.split(/[。！？\n]/).map(s => s.trim()).filter(Boolean).slice(0, count).join("；") || "暂无明确结论，需要补充。";
+    }
+
+    function pickActions(text) {
+      const parts = text.split(/[。！？\n]/).map(s => s.trim()).filter(Boolean);
+      const actions = parts.filter(s => /要|需要|跟进|确认|完成|整理|输出|提交|对接/.test(s)).slice(0, 4);
+      return actions.length ? actions : ["检查会议原文，手动补充下一步行动。"];
+    }
+
+    function renderMeetings() {
+      const box = document.getElementById("meetingList");
+      const list = store.get("meetings", []);
+      if (!list.length) {
+        box.innerHTML = '<div class="empty">还没有会议记录。</div>';
+        return;
+      }
+      box.innerHTML = list.map(x => `
+        <div class="card">
+          <div class="row">
+            <h3>${escapeHtml(x.title)}</h3>
+            <span class="muted">${escapeHtml(x.createdAt)}</span>
+          </div>
+          <p style="margin-top:10px"><strong>关键结论：</strong>${escapeHtml(x.conclusion)}</p>
+          <p style="margin-top:10px"><strong>行动项：</strong></p>
+          ${x.actions.map(a => `<span class="pill">${escapeHtml(a)}</span>`).join("")}
+          <details style="margin-top:12px">
+            <summary class="muted">查看原始内容</summary>
+            <p style="white-space:pre-wrap;margin-top:8px">${escapeHtml(x.raw)}</p>
+          </details>
+          <button class="danger" style="margin-top:12px" onclick="deleteItem('meetings', ${x.id})">删除</button>
+        </div>
+      `).join("");
+    }
+
+    function openPerson() {
+      renderPeople();
+      document.getElementById("personModal").classList.add("show");
+    }
+
+    function savePerson() {
+      const people = store.get("people", []);
+      const item = {
+        id: Date.now(),
+        name: val("pName"),
+        role: val("pRole"),
+        duty: val("pDuty"),
+        project: val("pProject")
+      };
+      if (!item.name) return alert("先写姓名。");
+      people.unshift(item);
+      store.set("people", people);
+      ["pName","pRole","pDuty","pProject"].forEach(id => document.getElementById(id).value = "");
+      renderPeople();
+    }
+
+    function renderPeople() {
+      const box = document.getElementById("peopleList");
+      const people = store.get("people", []);
+      if (!people.length) {
+        box.innerHTML = '<div class="empty">还没有联系人。</div>';
+        return;
+      }
+      box.innerHTML = people.map(p => `
+        <div class="card">
+          <h3>${escapeHtml(p.name)}</h3>
+          <span class="pill">${escapeHtml(p.role || "未填写岗位")}</span>
+          ${p.duty ? `<p style="margin-top:8px">负责：${escapeHtml(p.duty)}</p>` : ""}
+          ${p.project ? `<p style="margin-top:8px">项目：${escapeHtml(p.project)}</p>` : ""}
+          <button class="danger" style="margin-top:12px" onclick="deleteItem('people', ${p.id});renderPeople()">删除</button>
+        </div>
+      `).join("");
+    }
+
+    function deleteItem(key, id) {
+      if (!confirm("确定删除吗？")) return;
+      const list = store.get(key, []).filter(x => x.id !== id);
+      store.set(key, list);
+      renderAll();
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("show");
+    }
+
+    function val(id) {
+      return document.getElementById(id).value.trim();
+    }
+
+    function escapeHtml(str = "") {
+      return String(str).replace(/[&<>"']/g, m => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m]));
+    }
+
+    function renderAll() {
+      renderTodos();
+      renderIdea();
+      renderTraces();
+      renderKnowledge();
+      renderMeetings();
+    }
+
+    seed();
+    renderAll();
+
+    setInterval(() => {
+      const now = new Date();
+      const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      const todayKey = `reminded-${now.toDateString()}-${hhmm}`;
+      if ((hhmm === "11:30" || hhmm === "17:30") && !localStorage.getItem(todayKey)) {
+        localStorage.setItem(todayKey, "1");
+        if (confirm(`${hhmm} 到啦，要不要做一次半日记录？`)) openTextTrace();
+      }
+    }, 30000);
+  </script>
+</body>
+</html>
